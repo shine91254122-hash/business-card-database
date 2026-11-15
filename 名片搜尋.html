@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>名片搜尋</title>
+  <style>
+    :root { --ink:#18324b; --muted:#6b7280; --line:#dbe5ef; --soft:#f4f8fb; --accent:#1f6b9a; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:#f7fafc; font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC",Arial,sans-serif; }
+    .wrap { max-width:1280px; margin:0 auto; padding:28px 22px 48px; }
+    h1 { margin:0 0 6px; font-size:28px; letter-spacing:.04em; }
+    .sub { margin:0 0 20px; color:var(--muted); font-size:14px; }
+    .toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
+    input, select { border:1px solid var(--line); border-radius:10px; background:#fff; padding:11px 13px; color:var(--ink); font:inherit; }
+    input { flex:1 1 360px; min-width:240px; }
+    select { min-width:170px; }
+    .count { margin-left:auto; color:var(--muted); font-size:14px; white-space:nowrap; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:16px; }
+    .card { overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:0 5px 18px rgba(34,69,98,.06); }
+    .thumb { display:block; width:100%; height:190px; object-fit:contain; background:#edf3f7; border-bottom:1px solid var(--line); cursor:zoom-in; }
+    .body { padding:16px; }
+    .top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .name { margin:0; font-size:20px; }
+    .title { margin:4px 0 0; color:var(--muted); font-size:14px; }
+    .tag { display:inline-block; padding:5px 9px; border-radius:999px; background:#e7f2f8; color:#15577c; font-size:12px; white-space:nowrap; }
+    dl { display:grid; grid-template-columns:72px 1fr; gap:7px 10px; margin:16px 0 0; font-size:14px; }
+    dt { color:var(--muted); }
+    dd { margin:0; overflow-wrap:anywhere; }
+    a { color:var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .note { margin:14px 0 0; padding-top:12px; border-top:1px solid var(--line); color:#7b5a19; font-size:13px; }
+    .empty { padding:40px 20px; color:var(--muted); text-align:center; background:#fff; border:1px dashed var(--line); border-radius:14px; }
+    footer { margin-top:22px; color:var(--muted); font-size:12px; }
+    @media (max-width:560px) { .wrap { padding:20px 14px 36px; } .grid { grid-template-columns:1fr; } .count { width:100%; margin-left:0; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>名片搜尋</h1>
+    <p class="sub">可依姓名、公司、分類、電話、Email 或地址搜尋。此頁面可直接雙擊開啟，無需安裝。</p>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="搜尋關鍵字，例如：建築師、蔡仁毅、email…" autofocus>
+      <select id="category"><option value="">全部分類</option></select>
+      <span id="count" class="count"></span>
+    </div>
+    <section id="results" class="grid"></section>
+    <footer>資料來源：本資料夾內的已整理名片掃描檔。照片檔與本 HTML 放在同一個資料夾即可正常使用。</footer>
+  </main>
+  <script>
+    const cards = [
+      { category:"保險業務", name:"陳紀妍", title:"業務主任", company:"南山人壽保險股份有限公司／竹中通訊處", address:"30054 新竹市東大路二段110號5樓之2", phone:"03-5311107", fax:"03-5311436", mobile:"0925-158-568", email:"don789g@yahoo.com.tw", web:"http://www.nanshanlife.com.tw", tax:"11456006", image:"保險業務-陳紀妍-南山人壽保險股份有限公司.jpg", note:"卡面右上有手寫備註" },
+      { category:"公營事業", name:"吳文忠（育丞）", title:"副處長", company:"台灣自來水公司第二區管理處", address:"324 桃園市平鎮區水廠路150號", phone:"(03)464-3131#202", fax:"(03)464-3135", mobile:"0912-223257", email:"h485@mail.water.gov.tw", tax:"", image:"公營事業-吳文忠-台灣自來水公司.jpg", note:"卡面姓名後標示「育丞」" },
+      { category:"設備廠商", name:"謝欣雄", title:"資深廠務經理／管理部", company:"KoMiCo Technology Taiwan Ltd.", address:"303 新竹縣湖口鄉實踐路14號", phone:"03-597-2988 分機123", fax:"03-597-2188", mobile:"0933-976-646", email:"Jason.Hsieh@komico.com", web:"http://www.komico.com", tax:"28124684", image:"設備廠商-謝欣雄-KoMiCo Technology Taiwan Ltd.jpg" },
+      { category:"學者", name:"龔榮堂", title:"體育長／Professor & Director", company:"國立體育大學", address:"333325 桃園市龜山區文化一路250號", phone:"886-3-3283201 ext.5005", fax:"886-3-397-2904", mobile:"0921-336730", email:"kung@ntsu.edu.tw", tax:"02612744", image:"學者-龔榮堂-國立體育大學.jpg" },
+      { category:"建築師", name:"姓名未載", title:"", company:"九福建築師事務所／JOE FU ARCHITECTURE", address:"雲林縣斗六市成功路569號", phone:"05-5328108", fax:"05-5321108", mobile:"", email:"joefu.archi@gmail.com", tax:"38913272", image:"建築師-姓名未載-九福建築師事務所.jpg", note:"卡面未印個人姓名" },
+      { category:"建築師", name:"江堅龍", title:"", company:"江堅龍建築師事務所／Architect & Associate", address:"台北市內湖區陽光街323號1樓", phone:"(02)8797-3567#2539", fax:"(02)8797-3276", mobile:"", email:"clc25@ceci.com.tw", tax:"", image:"建築師-江堅龍-江堅龍建築師事務所.jpg" },
+      { category:"建築師", name:"蔡仁毅", title:"鑑定委員會主任委員／建築師事務所負責人", company:"蔡仁毅建築師事務所／福建金門馬祖地區建築師公會", address:"110 台北市信義區和平東路3段323號7樓", phone:"(02)2345-8707", fax:"(02)2345-8707", mobile:"0937-911-858", email:"jybear.tsai@msa.hinet.net", tax:"77355036", image:"建築師-蔡仁毅-蔡仁毅建築師事務所.jpg", note:"公會卡面另列會址：89350 金門縣金城鎮民權路226巷4弄22號4樓" },
+      { category:"建築相關業者", name:"俞翰蒼", title:"一級專員", company:"詮力實業股份有限公司", address:"110 台北市信義區松德路161號11樓之1", phone:"(02)2726-8558", fax:"(02)2726-8158", mobile:"0972-061-551", email:"ji394su3@chuanli.com.tw", tax:"43794487", image:"建築相關業者-俞翰蒼-詮力實業股份有限公司.jpg", note:"卡面有手寫備註" },
+      { category:"不動產代銷", name:"鄭子傑", title:"副總經理", company:"傳真機構／Virtuosi Real Estate", address:"台北市市民大道四段100號15樓", phone:"+886 2 2777-1288", fax:"+886 2 2777-1211", mobile:"+886 931 393 717", email:"chengtzuchieh@gmail.com", tax:"", image:"不動產代銷-鄭子傑-傳真機構.jpg", note:"卡面標示「專業建築代銷」" }
+    ];
+    const q = document.querySelector('#q');
+    const category = document.querySelector('#category');
+    const results = document.querySelector('#results');
+    const count = document.querySelector('#count');
+    [...new Set(cards.map(c => c.category))].forEach(c => category.insertAdjacentHTML('beforeend', `<option>${c}</option>`));
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const link = (value, href) => value ? `<a href="${esc(href)}">${esc(value)}</a>` : '';
+    function render() {
+      const keyword = q.value.trim().toLowerCase();
+      const selected = category.value;
+      const filtered = cards.filter(c => {
+        const haystack = Object.values(c).join(' ').toLowerCase();
+        return (!keyword || haystack.includes(keyword)) && (!selected || c.category === selected);
+      });
+      count.textContent = `顯示 ${filtered.length} / ${cards.length} 張`;
+      if (!filtered.length) { results.className = ''; results.innerHTML = '<div class="empty">找不到符合條件的名片。</div>'; return; }
+      results.className = 'grid';
+      results.innerHTML = filtered.map(c => `<article class="card">
+        <a href="${esc(c.image)}" target="_blank" title="開啟原始掃描圖"><img class="thumb" src="${esc(c.image)}" alt="${esc(c.name)} 的名片"></a>
+        <div class="body"><div class="top"><div><h2 class="name">${esc(c.name)}</h2>${c.title ? `<p class="title">${esc(c.title)}</p>` : ''}</div><span class="tag">${esc(c.category)}</span></div>
+        <dl><dt>公司／單位</dt><dd>${esc(c.company)}</dd><dt>地址</dt><dd>${esc(c.address)}</dd><dt>電話</dt><dd>${esc(c.phone)}</dd><dt>傳真</dt><dd>${esc(c.fax)}</dd><dt>手機</dt><dd>${esc(c.mobile)}</dd><dt>Email</dt><dd>${link(c.email, 'mailto:'+c.email)}</dd>${c.web ? `<dt>網址</dt><dd>${link(c.web, c.web)}</dd>` : ''}${c.tax ? `<dt>統編</dt><dd>${esc(c.tax)}</dd>` : ''}</dl>${c.note ? `<p class="note">備註：${esc(c.note)}</p>` : ''}</div></article>`).join('');
+    }
+    q.addEventListener('input', render); category.addEventListener('change', render); render();
+  </script>
+</body>
+</html>
